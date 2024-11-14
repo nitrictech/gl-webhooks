@@ -1,0 +1,23 @@
+version: '2.3'
+
+services:
+  gitlab:
+    restart: always
+    image: gitlab/gitlab-ce
+    ports:
+    - "8080:80"
+    volumes:
+    - gitlab-config:/etc/gitlab
+    - gitlab-logs:/var/log/gitlab
+    - gitlab-data:/var/opt/gitlab
+    environment:
+    - GITLAB_HTTPS=false
+    - SSL_SELF_SIGNED=false
+
+    - GITLAB_ROOT_PASSWORD=ThisIsNotDefault!
+    - GITLAB_ROOT_EMAIL=
+
+volumes:
+  gitlab-data:
+  gitlab-config:
+  gitlab-logs:
