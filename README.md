@@ -1,34 +1,56 @@
-<p align="center"><a href="https://nitric.io" target="_blank"><img src="https://raw.githubusercontent.com/nitrictech/nitric/main/docs/assets/nitric-logo.svg" height="120"></a></p>
+## Gitlab hooks with Nitric
 
-## About Nitric
+This project demonstrates spinning up a local gitlab server to test against a nitric service that will accept webhooks from gitlab.
 
-This is a [Nitric](https://nitric.io) Golang project, but Nitric is a framework for rapid development of cloud-native and serverless applications in many languages.
+## Running the project
 
-Using Nitric you define your apps in terms of the resources they need, then write the code for serverless function based APIs, event subscribers and scheduled jobs.
+To run this project you'll need:
 
-Apps built with Nitric can be deployed to AWS, Azure or Google Cloud all from the same code base so you can focus on your products, not your cloud provider.
+- Docker & Docker Compose
+- Nitric CLI
 
-Nitric makes it easy to:
-
-- Create smart [serverless functions and APIs](https://nitric.io/docs/apis)
-- Build reliable distributed apps that use [events](https://nitric.io/docs/messaging/topics) and/or [queues](https://nitric.io/docs/messaging/queues)
-- Securely store, retrieve and rotate [secrets](https://nitric.io/docs/secrets)
-- Read and write files from [buckets](https://nitric.io/docs/storage)
-
-## Learning Nitric
-
-Nitric provides detailed and intuitive [documentation](https://nitric.io/docs) and [guides](https://nitric.io/docs/getting-started) to help you get started quickly.
-
-If you'd rather chat with the maintainers or community, come and join our [Discord](https://nitric.io/chat) server, [GitHub Discussions](https://github.com/nitrictech/nitric/discussions) or find us on [Twitter](https://twitter.com/nitric_io).
-
-## Running this project
-
-To run this project you'll need the [Nitric CLI](https://nitric.io/docs/installation) installed, then you can use the CLI commands to run, build or deploy the project.
+Start by running the gitlab server:
 
 ```bash
-# install dependencies
-go mod tidy
+docker compose up
+```
 
-# run locally
+Give it some time, it takes a while to start the first time due to db migrations etc.
+
+Once you've confirmed that you can access the [login page](http://localhost:8080)
+
+You can login with the following:
+
+Username: root
+Password: ThisIsNotDefault!
+
+Once you've logged in start the nitric service:
+
+```
 nitric start
 ```
+
+## Testing the webhooks
+
+Go to the [system webhooks page](http://localhost:8080/admin/hooks) of your locally running gitlab instance: 
+
+Add a system webhook that will call the nitric service:
+
+> Because the gitlab service is running in a container you will need to refer to the docker host rather than localhost
+> `host.docker.internal` on Windows and Macos or `172.17.0.1` in Linux.
+
+Check the output of `nitric start` to ensure that you configure the correct port.
+Also make sure you disable SSL verification for local testing.
+
+![create webhook image](images/create-webhook.png)
+
+Once you've configured the webhook you can run a test against the nitric service:
+
+![test webhook image](images/test-webhook.png)
+
+> Note that Merge request hook tests will not work unless you have a project that exists with merge requests
+
+Once you've run a test you should see output like the following in your locally running nitric service:
+![output result image](images/test-output.png)
+
+You can also test against a nitric service running in the cloud by deploying your service and updating the webhook address to the address of the deployed API Gateway.
